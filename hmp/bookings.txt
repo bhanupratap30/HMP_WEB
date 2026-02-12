@@ -1,0 +1,2 @@
+# Bookings Data File
+# Format: id|userId|roomId|checkIn|checkOut|guests|specialRequests|totalPrice|status|bookedAt

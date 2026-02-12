@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book a Room - Grand Horizon Hotel</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <span class="logo-icon">◆</span>
+                <span class="logo-text">GRAND HORIZON</span>
+            </div>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="#" class="nav-link" id="userGreeting"></a></li>
+                <li><a href="#" class="nav-link nav-btn" id="logoutBtn">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="booking-container">
+        <div class="container">
+            <div class="booking-header fade-in">
+                <span class="section-label">RESERVATIONS</span>
+                <h1 class="section-title">Find Your Perfect Room</h1>
+                <p class="section-description">Browse our available rooms and make your reservation</p>
+            </div>
+
+            <!-- Search & Filter Section -->
+            <div class="filters-section fade-in-delay">
+                <h3 style="margin-bottom: 1.5rem; font-family: var(--font-display);">Search & Filter</h3>
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label for="searchRoom">Search by Room Number</label>
+                        <input type="text" id="searchRoom" placeholder="e.g., 101">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filterFloor">Filter by Floor</label>
+                        <select id="filterFloor">
+                            <option value="">All Floors</option>
+                            <option value="1">Floor 1</option>
+                            <option value="2">Floor 2</option>
+                            <option value="3">Floor 3</option>
+                            <option value="4">Floor 4</option>
+                            <option value="5">Floor 5</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="filterType">Filter by Type</label>
+                        <select id="filterType">
+                            <option value="">All Types</option>
+                            <option value="Single">Single</option>
+                            <option value="Double">Double</option>
+                            <option value="Deluxe">Deluxe</option>
+                            <option value="Suite">Suite</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="filterAvailability">Availability</label>
+                        <select id="filterAvailability">
+                            <option value="">All Rooms</option>
+                            <option value="true">Available Only</option>
+                            <option value="false">Booked Only</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="sortBy">Sort By</label>
+                        <select id="sortBy">
+                            <option value="number">Room Number</option>
+                            <option value="price-asc">Price (Low to High)</option>
+                            <option value="price-desc">Price (High to Low)</option>
+                            <option value="type">Room Type</option>
+                        </select>
+                    </div>
+                    <div class="filter-group" style="display: flex; align-items: flex-end;">
+                        <button class="btn btn-secondary" onclick="resetFilters()">Reset Filters</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rooms List -->
+            <div class="rooms-list" id="roomsList">
+                <!-- Rooms will be dynamically loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Modal -->
+    <div class="modal" id="bookingModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <h2 style="font-family: var(--font-display); margin-bottom: 2rem;">Complete Your Booking</h2>
+            
+            <div id="roomDetails" style="margin-bottom: 2rem;"></div>
+            
+            <form id="bookingForm">
+                <div class="form-group">
+                    <label for="checkIn">Check-in Date</label>
+                    <input type="date" id="checkIn" required>
+                </div>
+                <div class="form-group">
+                    <label for="checkOut">Check-out Date</label>
+                    <input type="date" id="checkOut" required>
+                </div>
+                <div class="form-group">
+                    <label for="guests">Number of Guests</label>
+                    <input type="number" id="guests" min="1" max="4" value="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="specialRequests">Special Requests (Optional)</label>
+                    <textarea id="specialRequests" rows="3" placeholder="Any special requirements..."></textarea>
+                </div>
+                
+                <div id="bookingTotal" style="background: #fafafa; padding: 1rem; border-radius: 4px; margin-bottom: 1.5rem;">
+                    <p style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span>Nights:</span>
+                        <strong id="nightsCount">0</strong>
+                    </p>
+                    <p style="display: flex; justify-content: space-between; font-size: 1.2rem; color: var(--secondary-color);">
+                        <span>Total:</span>
+                        <strong id="totalPrice">$0</strong>
+                    </p>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-full">Confirm Booking</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Initialize rooms data (simulating backend data)
+        let rooms = [
+            { id: 101, number: 101, floor: 1, type: 'Single', price: 120, available: true },
+            { id: 102, number: 102, floor: 1, type: 'Single', price: 120, available: true },
+            { id: 103, number: 103, floor: 1, type: 'Double', price: 180, available: false },
+            { id: 104, number: 104, floor: 1, type: 'Double', price: 180, available: true },
+            { id: 201, number: 201, floor: 2, type: 'Deluxe', price: 280, available: true },
+            { id: 202, number: 202, floor: 2, type: 'Deluxe', price: 280, available: true },
+            { id: 203, number: 203, floor: 2, type: 'Double', price: 180, available: false },
+            { id: 204, number: 204, floor: 2, type: 'Single', price: 120, available: true },
+            { id: 301, number: 301, floor: 3, type: 'Suite', price: 500, available: true },
+            { id: 302, number: 302, floor: 3, type: 'Deluxe', price: 280, available: true },
+            { id: 303, number: 303, floor: 3, type: 'Double', price: 180, available: true },
+            { id: 304, number: 304, floor: 3, type: 'Single', price: 120, available: false },
+            { id: 401, number: 401, floor: 4, type: 'Suite', price: 500, available: true },
+            { id: 402, number: 402, floor: 4, type: 'Deluxe', price: 280, available: true },
+            { id: 501, number: 501, floor: 5, type: 'Suite', price: 500, available: false },
+            { id: 502, number: 502, floor: 5, type: 'Suite', price: 500, available: true },
+        ];
+
+        // Load rooms from localStorage if exists
+        if (localStorage.getItem('hotelRooms')) {
+            rooms = JSON.parse(localStorage.getItem('hotelRooms'));
+        } else {
+            localStorage.setItem('hotelRooms', JSON.stringify(rooms));
+        }
+
+        let currentBookingRoom = null;
+
+        // Check if user is logged in
+        const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+        if (!currentUser) {
+            alert('Please login to book a room');
+            window.location.href = 'login.html';
+        } else {
+            document.getElementById('userGreeting').textContent = `Hello, ${currentUser.name}`;
+        }
+
+        // Logout functionality
+        document.getElementById('logoutBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            localStorage.removeItem('currentUser');
+            window.location.href = 'index.html';
+        });
+
+        // Display rooms
+        function displayRooms(roomsToDisplay) {
+            const roomsList = document.getElementById('roomsList');
+            
+            if (roomsToDisplay.length === 0) {
+                roomsList.innerHTML = '<p style="text-align: center; padding: 3rem; color: #999;">No rooms found matching your criteria.</p>';
+                return;
+            }
+            
+            roomsList.innerHTML = roomsToDisplay.map(room => `
+                <div class="room-item">
+                    <div class="room-item-image room-${room.type.toLowerCase()}"></div>
+                    <div class="room-item-details">
+                        <h3 class="room-item-title">Room ${room.number} - ${room.type}</h3>
+                        <p style="color: #666; margin-bottom: 1rem;">Floor ${room.floor}</p>
+                        <div class="room-specs">
+                            <div class="spec-item">
+                                <span>🛏️</span>
+                                <span>${room.type === 'Single' ? 'King Bed' : room.type === 'Double' ? 'Two Beds' : 'Master Suite'}</span>
+                            </div>
+                            <div class="spec-item">
+                                <span>📏</span>
+                                <span>${room.type === 'Single' ? '25m²' : room.type === 'Double' ? '35m²' : room.type === 'Deluxe' ? '45m²' : '80m²'}</span>
+                            </div>
+                            <div class="spec-item">
+                                <span>🪟</span>
+                                <span>${room.floor >= 3 ? 'Ocean View' : room.floor === 2 ? 'Garden View' : 'City View'}</span>
+                            </div>
+                        </div>
+                        <div style="margin-top: 1rem;">
+                            <span class="room-status ${room.available ? 'status-available' : 'status-booked'}">
+                                ${room.available ? '✓ Available' : '✗ Booked'}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="room-item-actions">
+                        <div class="room-price" style="margin-bottom: 1.5rem;">
+                            <div class="price-amount">$${room.price}</div>
+                            <div class="price-period">/night</div>
+                        </div>
+                        ${room.available ? `
+                            <button class="btn btn-primary" onclick="openBookingModal(${room.id})">Book Now</button>
+                        ` : `
+                            <button class="btn" style="background: #ccc; cursor: not-allowed;" disabled>Not Available</button>
+                            <button class="btn btn-secondary" style="margin-top: 0.5rem;" onclick="cancelBooking(${room.id})">Cancel Booking</button>
+                        `}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Search and filter functionality
+        function filterAndSortRooms() {
+            let filteredRooms = [...rooms];
+            
+            // Search by room number
+            const searchTerm = document.getElementById('searchRoom').value;
+            if (searchTerm) {
+                filteredRooms = filteredRooms.filter(room => 
+                    room.number.toString().includes(searchTerm)
+                );
+            }
+            
+            // Filter by floor
+            const floorFilter = document.getElementById('filterFloor').value;
+            if (floorFilter) {
+                filteredRooms = filteredRooms.filter(room => 
+                    room.floor === parseInt(floorFilter)
+                );
+            }
+            
+            // Filter by type
+            const typeFilter = document.getElementById('filterType').value;
+            if (typeFilter) {
+                filteredRooms = filteredRooms.filter(room => 
+                    room.type === typeFilter
+                );
+            }
+            
+            // Filter by availability
+            const availabilityFilter = document.getElementById('filterAvailability').value;
+            if (availabilityFilter) {
+                filteredRooms = filteredRooms.filter(room => 
+                    room.available === (availabilityFilter === 'true')
+                );
+            }
+            
+            // Sort rooms
+            const sortBy = document.getElementById('sortBy').value;
+            switch(sortBy) {
+                case 'number':
+                    filteredRooms.sort((a, b) => a.number - b.number);
+                    break;
+                case 'price-asc':
+                    filteredRooms.sort((a, b) => a.price - b.price);
+                    break;
+                case 'price-desc':
+                    filteredRooms.sort((a, b) => b.price - a.price);
+                    break;
+                case 'type':
+                    filteredRooms.sort((a, b) => a.type.localeCompare(b.type));
+                    break;
+            }
+            
+            displayRooms(filteredRooms);
+        }
+
+        function resetFilters() {
+            document.getElementById('searchRoom').value = '';
+            document.getElementById('filterFloor').value = '';
+            document.getElementById('filterType').value = '';
+            document.getElementById('filterAvailability').value = '';
+            document.getElementById('sortBy').value = 'number';
+            filterAndSortRooms();
+        }
+
+        // Add event listeners to filters
+        ['searchRoom', 'filterFloor', 'filterType', 'filterAvailability', 'sortBy'].forEach(id => {
+            document.getElementById(id).addEventListener('change', filterAndSortRooms);
+            document.getElementById(id).addEventListener('keyup', filterAndSortRooms);
+        });
+
+        // Booking modal functions
+        function openBookingModal(roomId) {
+            currentBookingRoom = rooms.find(r => r.id === roomId);
+            const modal = document.getElementById('bookingModal');
+            
+            document.getElementById('roomDetails').innerHTML = `
+                <div style="background: #fafafa; padding: 1.5rem; border-radius: 4px;">
+                    <h3 style="font-family: var(--font-display); margin-bottom: 1rem;">Room ${currentBookingRoom.number} - ${currentBookingRoom.type}</h3>
+                    <p style="color: #666;">Floor ${currentBookingRoom.floor} • $${currentBookingRoom.price}/night</p>
+                </div>
+            `;
+            
+            // Set minimum date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('checkIn').min = today;
+            document.getElementById('checkOut').min = today;
+            
+            modal.classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('bookingModal').classList.remove('show');
+            currentBookingRoom = null;
+            document.getElementById('bookingForm').reset();
+        }
+
+        // Calculate total price
+        function updateTotal() {
+            const checkIn = new Date(document.getElementById('checkIn').value);
+            const checkOut = new Date(document.getElementById('checkOut').value);
+            
+            if (checkIn && checkOut && checkOut > checkIn && currentBookingRoom) {
+                const nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+                const total = nights * currentBookingRoom.price;
+                
+                document.getElementById('nightsCount').textContent = nights;
+                document.getElementById('totalPrice').textContent = '$' + total;
+            }
+        }
+
+        document.getElementById('checkIn').addEventListener('change', function() {
+            document.getElementById('checkOut').min = this.value;
+            updateTotal();
+        });
+        document.getElementById('checkOut').addEventListener('change', updateTotal);
+
+        // Handle booking submission
+        document.getElementById('bookingForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const checkIn = document.getElementById('checkIn').value;
+            const checkOut = document.getElementById('checkOut').value;
+            const guests = document.getElementById('guests').value;
+            const specialRequests = document.getElementById('specialRequests').value;
+            
+            // Create booking
+            const booking = {
+                id: Date.now(),
+                userId: currentUser.id,
+                userName: currentUser.name,
+                userEmail: currentUser.email,
+                roomId: currentBookingRoom.id,
+                roomNumber: currentBookingRoom.number,
+                roomType: currentBookingRoom.type,
+                checkIn: checkIn,
+                checkOut: checkOut,
+                guests: guests,
+                specialRequests: specialRequests,
+                totalPrice: document.getElementById('totalPrice').textContent,
+                status: 'confirmed',
+                bookedAt: new Date().toISOString()
+            };
+            
+            // Update room availability
+            const roomIndex = rooms.findIndex(r => r.id === currentBookingRoom.id);
+            rooms[roomIndex].available = false;
+            localStorage.setItem('hotelRooms', JSON.stringify(rooms));
+            
+            // Store booking
+            const bookings = JSON.parse(localStorage.getItem('hotelBookings') || '[]');
+            bookings.push(booking);
+            localStorage.setItem('hotelBookings', JSON.stringify(bookings));
+            
+            alert('Booking confirmed! Confirmation details sent to ' + currentUser.email);
+            closeModal();
+            filterAndSortRooms();
+        });
+
+        function cancelBooking(roomId) {
+            if (!confirm('Are you sure you want to cancel this booking?')) return;
+            
+            // Update room availability
+            const roomIndex = rooms.findIndex(r => r.id === roomId);
+            rooms[roomIndex].available = true;
+            localStorage.setItem('hotelRooms', JSON.stringify(rooms));
+            
+            // Remove booking (simplified - in real app would check user ownership)
+            const bookings = JSON.parse(localStorage.getItem('hotelBookings') || '[]');
+            const updatedBookings = bookings.filter(b => b.roomId !== roomId);
+            localStorage.setItem('hotelBookings', JSON.stringify(updatedBookings));
+            
+            alert('Booking cancelled successfully!');
+            filterAndSortRooms();
+        }
+
+        // Initial display
+        displayRooms(rooms);
+    </script>
+</body>
+</html>
